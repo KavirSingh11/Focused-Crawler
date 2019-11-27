@@ -29,35 +29,38 @@ class Spider:
 
         try:
             client = urllib.request.urlopen(request)
+            webpage = client.read()
+            client.close()
+            
+            pageSoup = soup(webpage, "html.parser")
+            
+            title = pageSoup.title.string
+            desc = self.getAttributeData(pageSoup, "meta", "description")
+            author = self.getAttributeData(pageSoup, "meta", "author")
+            keywords = self.getAttributeData(pageSoup, "meta", "keywords")
+
+            links = pageSoup.find_all("a", href=True)
+            # extracts url and content from <a> tag
+            linkData = [self.getLinkData(link) for link in links]
+
+            # filter relevant links
+            relevantLinks = self.filterList(linkData)
+
+            print("---- START ----")
+            print("url: " + url)
+            print("title: " + title)
+            print("desc: " + desc)
+            print("author: " + author)
+            print("keywords: " + keywords)
+            print("relevant links: " + str(relevantLinks))
+
+
+            print("---- END ----")
         except:
-            print('Could not visit url in queue: ' + url)
-            return
-
-        webpage = client.read()
-        client.close()
-            
-        pageSoup = soup(webpage, "html.parser")
-            
-        title = pageSoup.title.string
-        desc = self.getAttributeData(pageSoup, "meta", "description")
-        author = self.getAttributeData(pageSoup, "meta", "author")
-        keywords = self.getAttributeData(pageSoup, "meta", "keywords")
-
-        links = pageSoup.find_all("a", href=True)
-        # extracts url and content from <a> tag
-        linkData = [self.getLinkData(link) for link in links]
-
-        # filter relevant links
-        relevantLinks = self.filterList(linkData)
-
-        print("---- START ----")
-        print("url: " + url)
-        print("title: " + title)
-        print("desc: " + desc)
-        print("author: " + author)
-        print("keywords: " + keywords)
-        print("relevant links: " + str(relevantLinks))
-        print("---- END ----")
+            print('Could not visit url.')
+        finally:
+            if client != None:
+                client.close()
                 
     def getAttributeData(self, pageSoup, tag, attr):
         data = pageSoup.find(tag, attrs={ "name": attr })
@@ -82,9 +85,10 @@ class Spider:
         result = []
         simVal = 0
         select = ""
-        findSim = calcSim()
 
         for x in links:
+            
+            findSim = calcSim()
             url , text = x
             if url[-1:] == "/":
                 url = url[:-1]
@@ -92,17 +96,31 @@ class Spider:
             str.replace('_', '-', parsedURL)
             parsedURL = parsedURL.split('-')
 
-            print(parsedURL)
 
             if parsedURL is not None and text is not None and (len(parsedURL) > len(text)):
-                select = parsedURL
-            elif text is None: select = parsedURL
+                select = ''.join(parsedURL)
+           
+            elif text is None: select = ''.join(parsedURL)
+           
             elif parsedURL is None: select = text
+           
             else:
                 select = text 
 
-            simVal = findSim.urlSim(select , self.query)
 
+            # if (len(parsedURL) > len(text)) and parsedURL is not None and text is not None:
+            #     select = ''.join(parsedURL)
+
+            # elif text is None: select =  ''.join(parsedURL)
+
+            # elif parsedURL is None: select = text
+
+            # else:
+            #     select = text 
+
+            simVal = findSim.urlSim(select , self.query)
+            print(simVal)
+            print(select)
             if simVal:
                 result.append(x)
 
