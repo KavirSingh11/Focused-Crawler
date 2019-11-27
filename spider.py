@@ -1,3 +1,5 @@
+from linkData import linkData
+from calcSim import calcSim
 import bs4  
 import urllib.request
 from bs4 import BeautifulSoup as soup
@@ -74,6 +76,28 @@ class Spider:
         for content in contents:
             if isinstance(content, str):
                 return content
+                
+    def filterList(self, links):
+        result = []
+        simVal = 0
+        select = ""
+        findSim = calcSim()
+
+        for x in links:
+            url , text = x
+            parsedURL = url.split('/')
+            str.replace('_', '-', parsedURL[-1])
+            parsedURL = parsedURL[-1].split('-')
+            if len(parsedURL) > len(text):
+                select = parsedURL
+            else:
+                select = text 
+
+            simVal = findSim.urlSim(select , self.query)
+
+            if simVal:
+                result.append(x)
+
+
+        return result
         
-
-
