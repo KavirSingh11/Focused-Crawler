@@ -2,7 +2,7 @@
 from spider import Spider
 
 # query = input("Enter your topic")
-query = 'html'
+query = 'car'
 url = 'https://www.reddit.com/r/all/'
 
 crawler = Spider(query, url)
