@@ -23,7 +23,7 @@ class Spider:
         request = urllib.request.Request(
             url,
             data=None,
-            headers={ "User-Agent": "Gengi-bot/1.0" }
+            headers={ "User-Agent": "Gengi-bot/2.0" }
         )
 
         try:
@@ -43,7 +43,7 @@ class Spider:
             linkData = [self.getLinkData(link) for link in links]
 
             # filter relevant links
-            relevantLinks = linkData
+            relevantLinks = self.filterList(linkData)
 
             print("---- START ----")
             print("url: " + url)
@@ -52,6 +52,8 @@ class Spider:
             print("author: " + author)
             print("keywords: " + keywords)
             print("relevant links: " + str(relevantLinks))
+
+
             print("---- END ----")
         except:
             print('Could not visit url.')
@@ -78,6 +80,7 @@ class Spider:
                 return content
                 
     def filterList(self, links):
+        print("looking for similar links")
         result = []
         simVal = 0
         select = ""
@@ -88,8 +91,11 @@ class Spider:
             parsedURL = url.split('/')
             str.replace('_', '-', parsedURL[-1])
             parsedURL = parsedURL[-1].split('-')
-            if len(parsedURL) > len(text):
+            print(parsedURL)
+            if (len(parsedURL) > len(text)) and parsedURL is not None and text is not None:
                 select = parsedURL
+            elif text is None: select = parsedURL
+            elif parsedURL is None: select = text
             else:
                 select = text 
 

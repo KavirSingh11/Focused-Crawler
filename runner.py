@@ -1,8 +1,8 @@
-# import scraper
+
 from spider import Spider
 
 # query = input("Enter your topic")
-query = 'html'
+query = 'funny'
 url = 'https://www.reddit.com/r/all/'
 
 crawler = Spider(query, url)
