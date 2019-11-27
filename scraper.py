@@ -8,9 +8,10 @@ class pageData:
 
     keywordList = []
 
-    def __init__(self, keywords, desc):
+    def __init__(self, keywords, desc, title):
         self.keywords = keywords
         self.desc = desc
+        self.title = title
         pageData.keywordList.append(keywords.split())
         
     def printKeywords(self):
@@ -25,22 +26,28 @@ def getPageData(url):
     webpage = uClient.read()
     uClient.close()
 
-    pageSoup = soup(webpage , "lxml")
+    pageSoup = soup(webpage , "html-parser")
     title = pageSoup.title.string
     print(title)
 
     desc = pageSoup.find(attrs={'name' : 'Description'})
     if desc == None:
         desc = pageSoup.find(attrs={'name' : 'description'})
-    print(desc['content'])
+    #print(desc['content'])
 
     keywords = pageSoup.find(attrs={'name' : 'keywords'})
-    print(keywords['content'])
+    #print(keywords['content'])
 
-    pageInfo = pageData(keywords['content'] , desc['content'])
+    pageInfo = pageData(keywords['content'] , desc['content'], title)
+
 
     pageInfo.printKeywords()
     pageInfo.printDesc()
+
+def searchAnchor(page):
+    print("yeet")
+
+
 
 #keywords = pageSoup.findAll("title" , )
 
