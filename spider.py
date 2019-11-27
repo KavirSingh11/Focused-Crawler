@@ -1,5 +1,5 @@
 import bs4  
-from urllib.request import urlopen
+import urllib.request
 from bs4 import BeautifulSoup as soup
 
 class Spider:
@@ -18,8 +18,14 @@ class Spider:
 
     def getUrlData(self, url):
         client = None
+        request = urllib.request.Request(
+            url,
+            data=None,
+            headers={ "User-Agent": "Gengi-bot/1.0" }
+        )
+
         try:
-            client = urlopen(url)
+            client = urllib.request.urlopen(request)
             webpage = client.read()
             client.close()
             
