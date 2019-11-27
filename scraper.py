@@ -8,10 +8,12 @@ class pageData:
 
     keywordList = []
 
-    def __init__(self, keywords, desc, title):
+    def __init__(self, keywords, desc, title, linkURL, linkText):
         self.keywords = keywords
         self.desc = desc
         self.title = title
+        self.linkURL = linkURL
+        self.linkText = linkText
         pageData.keywordList.append(keywords.split())
         
     def printKeywords(self):
@@ -38,13 +40,22 @@ def getPageData(url):
     keywords = pageSoup.find(attrs={'name' : 'keywords'})
     #print(keywords['content'])
 
-    pageInfo = pageData(keywords['content'] , desc['content'], title)
 
+    linksURL = ""
+    linkText = ""
+    for a in pageSoup.find_all('a', href=True, text=True):
+        linksURL = a['href']
+        linkText = a['text']
+
+    pageInfo = pageData(keywords['content'] , desc['content'], title, linksURL, linkText)
 
     pageInfo.printKeywords()
     pageInfo.printDesc()
 
-def searchAnchor(page):
+    
+    return pageSoup
+
+def searchLinks(pageSoup):
     print("yeet")
 
 

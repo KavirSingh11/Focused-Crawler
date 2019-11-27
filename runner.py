@@ -3,4 +3,5 @@ import scraper
 query = input("Enter your topic")
 
 url = input("Enter the starting the URL")
-scraper.getPageData(url)
+pageSoup = scraper.getPageData(url)
+links = scraper.searchLinks
