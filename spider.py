@@ -1,5 +1,6 @@
 from linkData import linkData
 from calcSim import calcSim
+from urllib.parse import urlparse
 import bs4  
 import urllib.request
 from bs4 import BeautifulSoup as soup
@@ -88,10 +89,14 @@ class Spider:
 
         for x in links:
             url , text = x
-            parsedURL = url.split('/')
-            str.replace('_', '-', parsedURL[-1])
-            parsedURL = parsedURL[-1].split('-')
+            if url[-1:] == "/":
+                url = url[:-1]
+            parsedURL = url.split('/')[-1]
+            str.replace('_', '-', parsedURL)
+            parsedURL = parsedURL.split('-')
+
             print(parsedURL)
+
             if (len(parsedURL) > len(text)) and parsedURL is not None and text is not None:
                 select = parsedURL
             elif text is None: select = parsedURL
