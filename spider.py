@@ -1,10 +1,11 @@
 from linkData import linkData
 from calcSim import calcSim
-from urllib.parse import urlparse
-import bs4  
-import urllib.request
 from bs4 import BeautifulSoup as soup
 from queue import Queue
+from urllib.parse import urlparse
+import urllib.request
+import urllib.robotparser
+import bs4  
 
 class Spider:
     startTime = 0
@@ -14,36 +15,30 @@ class Spider:
     depth = 0
     MAX_DEPTH = 2
     starting_url = ""
+    robotParser = None
 
     def __init__(self, query, initialUrl):
         self.query = query
         self.starting_url = initialUrl 
         self.urlQueue.put(initialUrl)
+        self.robotParser = urllib.robotparser.RobotFileParser()
     
     def run(self):
+        self.fetchRobotsTxt()
+
         print("crawling...")
         while(not self.urlQueue.empty() and self.depth < self.MAX_DEPTH):
-            self.getUrlData(self.urlQueue.get())
+            nextUrl = self.urlQueue.get()
+
+            if self.robotParser.can_fetch("Genji-bot/2.0", nextUrl):
+                self.getUrlData(nextUrl)
+            else:
+                print("Cannot visit: ", nextUrl)
         
-        print("depth: " + str(self.depth))
+        print("Crawl depth: " + str(self.depth))
 
     def getUrlData(self, url):
-        client = None
-        request = urllib.request.Request(
-            url,
-            data=None,
-            headers={ "User-Agent": "Gengi-bot/2.0" }
-        )
-
-        try:
-            client = urllib.request.urlopen(request)
-        except:
-            print ("Could not visit url in queue: " + url)
-            return
-        
-        webpage = client.read()
-        client.close()
-            
+        webpage = self.fetch(url)
         pageSoup = soup(webpage, "html.parser")
             
         title = pageSoup.title.string
@@ -65,15 +60,46 @@ class Spider:
         print("author: " + author)
         print("keywords: " + keywords)
         #print("relevant links: " + str(relevantLinks))
-        print("---- END ----")
+        print("relevant links: " + str(len(relevantLinks)))
+        print("---- END ----\n")
 
-        for rel in relevantLinks:
-            nextUrl, _ = rel
-            self.urlQueue.put(self.buildURL(nextUrl))
-            
-            
+        if len(relevantLinks) > 0:
+            for rel in relevantLinks:
+                nextUrl, _ = rel
+                self.urlQueue.put(self.buildURL(nextUrl))
+            self.depth += 1
+    
+    def fetchRobotsTxt(self):
+        if not self.starting_url: return []
+
+        parsed = urlparse(self.starting_url)
+        domain = parsed.scheme + "://" + parsed.netloc
+        url = domain + "/robots.txt"
         
-        self.depth += 1
+        self.robotParser.set_url(url)
+        self.robotParser.read()
+    
+    def fetch(self, url):
+        if not url: return
+
+        client = None
+        webpage = None
+
+        request = urllib.request.Request(
+            url,
+            data=None,
+            headers={ "User-Agent": "Genji-bot/2.0" }
+        )
+
+        try:
+            client = urllib.request.urlopen(request)
+            webpage = client.read()
+            client.close()
+
+            return webpage
+        except:
+            print("Could not fetch url: " + url)
+            return
 
     def buildURL(self, url):
         parseResult = urlparse(self.starting_url)
@@ -83,7 +109,6 @@ class Spider:
             formattedUrl = parseResult.scheme + "://" + parseResult.netloc + url
 
         return formattedUrl
-
 
     def getAttributeData(self, pageSoup, tag, attr):
         data = pageSoup.find(tag, attrs={ "name": attr })
@@ -119,7 +144,6 @@ class Spider:
             str.replace('_', '-', parsedURL)
             parsedURL = parsedURL.split('-')
 
-
             if parsedURL is not None and text is not None and (len(parsedURL) > len(text)):
                 select = ''.join(parsedURL)
            
@@ -129,7 +153,6 @@ class Spider:
            
             else:
                 select = text 
-
 
             # if (len(parsedURL) > len(text)) and parsedURL is not None and text is not None:
             #     select = ''.join(parsedURL)
@@ -146,6 +169,5 @@ class Spider:
             # print(select)
             if simVal:
                 result.append(x)
-
 
         return result

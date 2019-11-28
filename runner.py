@@ -1,8 +1,8 @@
 from spider import Spider
 
 # query = input("Enter your topic")
-query = 'dollar'
-url = 'https://en.wikipedia.org/wiki/Main_Page'
+query = 'food'
+url = 'https://www.reddit.com/r/all/'
 
 crawler = Spider(query, url)
 crawler.run()
