@@ -69,7 +69,8 @@ class Spider:
 
         for rel in relevantLinks:
             nextUrl, _ = rel
-            nextUrl = self.buildURL(nextUrl)
+            if(not nextUrl.__contains__("http")):
+                nextUrl = self.buildURL(nextUrl)
             self.urlQueue.put(nextUrl)
             
             
@@ -77,12 +78,10 @@ class Spider:
         self.depth += 1
 
     def buildURL(self, url):
-        parseResult = urlparse(self.starting_url)
 
-        if not url.__contains__(parseResult.netloc):
-            url = parseResult.netloc + url
+        parseResult = urlparse(self.starting_url)
         if not url.__contains__(parseResult.scheme):
-            url = parseResult.scheme + "://" + url
+            url = parseResult.scheme + "://" + parseResult.netloc + url
 
         print(url)
 
