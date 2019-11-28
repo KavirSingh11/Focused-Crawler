@@ -69,23 +69,20 @@ class Spider:
 
         for rel in relevantLinks:
             nextUrl, _ = rel
-            if(not nextUrl.__contains__("http")):
-                nextUrl = self.buildURL(nextUrl)
-            self.urlQueue.put(nextUrl)
+            self.urlQueue.put(self.buildURL(nextUrl))
             
             
         
         self.depth += 1
 
     def buildURL(self, url):
-
         parseResult = urlparse(self.starting_url)
+        formattedUrl = url
+
         if not url.__contains__(parseResult.scheme):
-            url = parseResult.scheme + "://" + parseResult.netloc + url
+            formattedUrl = parseResult.scheme + "://" + parseResult.netloc + url
 
-        print(url)
-
-        return url
+        return formattedUrl
 
 
     def getAttributeData(self, pageSoup, tag, attr):
