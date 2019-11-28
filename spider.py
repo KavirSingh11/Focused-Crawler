@@ -116,8 +116,8 @@ class Spider:
             #     select = text 
 
             simVal = findSim.urlSim(select , self.query)
-            print(simVal)
-            print(select)
+            # print(simVal)
+            # print(select)
             if simVal:
                 result.append(x)
 
