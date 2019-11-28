@@ -1,5 +1,6 @@
 from linkData import linkData
 from calcSim import calcSim
+from urllib.parse import urlparse
 import bs4  
 import urllib.request
 from bs4 import BeautifulSoup as soup
@@ -23,15 +24,15 @@ class Spider:
         request = urllib.request.Request(
             url,
             data=None,
-            headers={ "User-Agent": "Gengi-bot/1.0" }
+            headers={ "User-Agent": "Gengi-bot/2.0" }
         )
 
         try:
             client = urllib.request.urlopen(request)
         except:
-            print('Could not visit url in queue: ' + url)
+            print ("Could not visit url in queue: " + url)
             return
-
+        
         webpage = client.read()
         client.close()
             
@@ -57,8 +58,6 @@ class Spider:
         print("keywords: " + keywords)
         print("relevant links: " + str(relevantLinks))
         print("---- END ----")
-
-        client.close()
                 
     def getAttributeData(self, pageSoup, tag, attr):
         data = pageSoup.find(tag, attrs={ "name": attr })
@@ -79,23 +78,46 @@ class Spider:
                 return content
                 
     def filterList(self, links):
+        print("looking for similar links")
         result = []
         simVal = 0
         select = ""
-        findSim = calcSim()
 
         for x in links:
+            
+            findSim = calcSim()
             url , text = x
-            parsedURL = url.split('/')
-            str.replace('_', '-', parsedURL[-1])
-            parsedURL = parsedURL[-1].split('-')
-            if len(parsedURL) > len(text):
-                select = parsedURL
+            if url[-1:] == "/":
+                url = url[:-1]
+            parsedURL = url.split('/')[-1]
+            str.replace('_', '-', parsedURL)
+            parsedURL = parsedURL.split('-')
+
+
+            if parsedURL is not None and text is not None and (len(parsedURL) > len(text)):
+                select = ''.join(parsedURL)
+           
+            elif text is None: select = ''.join(parsedURL)
+           
+            elif parsedURL is None: select = text
+           
             else:
                 select = text 
 
-            simVal = findSim.urlSim(select , self.query)
 
+            # if (len(parsedURL) > len(text)) and parsedURL is not None and text is not None:
+            #     select = ''.join(parsedURL)
+
+            # elif text is None: select =  ''.join(parsedURL)
+
+            # elif parsedURL is None: select = text
+
+            # else:
+            #     select = text 
+
+            simVal = findSim.urlSim(select , self.query)
+            print(simVal)
+            print(select)
             if simVal:
                 result.append(x)
 
