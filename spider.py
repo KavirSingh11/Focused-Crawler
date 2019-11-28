@@ -4,20 +4,27 @@ from urllib.parse import urlparse
 import bs4  
 import urllib.request
 from bs4 import BeautifulSoup as soup
+from queue import Queue
 
 class Spider:
     startTime = 0
     endTime = 0
-    urlQueue = []
+    urlQueue = Queue()
     query = ""
+    depth = 0
+    MAX_DEPTH = 2
+
 
     def __init__(self, query, initialUrl):
         self.query = query
-        self.urlQueue.append(initialUrl)
+        self.urlQueue.put(initialUrl)
     
     def run(self):
         print("crawling...")
-        self.getUrlData(self.urlQueue[0])
+        while(not self.urlQueue.empty() or self.depth < self.MAX_DEPTH):
+            self.getUrlData(self.urlQueue.get())
+        
+        print("depth: " + str(self.depth))
 
     def getUrlData(self, url):
         client = None
@@ -58,7 +65,17 @@ class Spider:
         print("keywords: " + keywords)
         print("relevant links: " + str(relevantLinks))
         print("---- END ----")
-                
+
+        for rel in relevantLinks:
+            nextUrl, _ = rel
+            try:
+                self.urlQueue.put(nextUrl)
+            except:
+                print("failed at depth: " + str(self.depth))
+                return
+        
+        self.depth += 1
+
     def getAttributeData(self, pageSoup, tag, attr):
         data = pageSoup.find(tag, attrs={ "name": attr })
         if data:
