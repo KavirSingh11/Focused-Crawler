@@ -28,7 +28,7 @@ def getPageData(url):
     webpage = uClient.read()
     uClient.close()
 
-    pageSoup = soup(webpage , "html-parser")
+    pageSoup = soup(webpage , "html.parser")
     title = pageSoup.title.string
     print(title)
 
@@ -44,13 +44,12 @@ def getPageData(url):
     linksURL = ""
     linkText = ""
     for a in pageSoup.find_all('a', href=True, text=True):
-        linksURL = a['href']
-        linkText = a['text']
+        print ("link data: " + a['href'] + " " + str(a.contents))
 
-    pageInfo = pageData(keywords['content'] , desc['content'], title, linksURL, linkText)
+    # pageInfo = pageData(keywords['content'] , desc['content'], title, linksURL, linkText)
 
-    pageInfo.printKeywords()
-    pageInfo.printDesc()
+    # pageInfo.printKeywords()
+    # pageInfo.printDesc()
 
     
     return pageSoup
