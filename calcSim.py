@@ -1,12 +1,7 @@
 class calcSim:
 
     def urlSim(self, url , query):
-        hits = 0
-        for i in query:
-            for x in url:
-                if i == x: hits += 1
-        
-        if hits > 2: return True
+        if url.__contains__(query): return True
         else: return False
         
 
