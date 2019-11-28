@@ -1,4 +1,3 @@
-
 from spider import Spider
 
 # query = input("Enter your topic")

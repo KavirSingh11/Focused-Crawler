@@ -13,15 +13,16 @@ class Spider:
     query = ""
     depth = 0
     MAX_DEPTH = 2
-
+    starting_url = ""
 
     def __init__(self, query, initialUrl):
         self.query = query
+        self.starting_url = initialUrl 
         self.urlQueue.put(initialUrl)
     
     def run(self):
         print("crawling...")
-        while(not self.urlQueue.empty() or self.depth < self.MAX_DEPTH):
+        while(not self.urlQueue.empty() and self.depth < self.MAX_DEPTH):
             self.getUrlData(self.urlQueue.get())
         
         print("depth: " + str(self.depth))
@@ -63,18 +64,30 @@ class Spider:
         print("desc: " + desc)
         print("author: " + author)
         print("keywords: " + keywords)
-        print("relevant links: " + str(relevantLinks))
+        #print("relevant links: " + str(relevantLinks))
         print("---- END ----")
 
         for rel in relevantLinks:
             nextUrl, _ = rel
-            try:
-                self.urlQueue.put(nextUrl)
-            except:
-                print("failed at depth: " + str(self.depth))
-                return
+            nextUrl = self.buildURL(nextUrl)
+            self.urlQueue.put(nextUrl)
+            
+            
         
         self.depth += 1
+
+    def buildURL(self, url):
+        parseResult = urlparse(self.starting_url)
+
+        if not url.__contains__(parseResult.netloc):
+            url = parseResult.netloc + url
+        if not url.__contains__(parseResult.scheme):
+            url = parseResult.scheme + "://" + url
+
+        print(url)
+
+        return url
+
 
     def getAttributeData(self, pageSoup, tag, attr):
         data = pageSoup.find(tag, attrs={ "name": attr })
@@ -140,4 +153,3 @@ class Spider:
 
 
         return result
-        

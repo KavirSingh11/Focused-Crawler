@@ -1,6 +1,7 @@
 class calcSim:
 
     def urlSim(self, url , query):
+        
         if url.__contains__(query): return True
         else: return False
         
