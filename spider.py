@@ -5,6 +5,7 @@ import urllib.request
 import urllib.robotparser
 import bs4 
 import time
+import re
 
 class Spider:
     startTime = 0
@@ -12,7 +13,7 @@ class Spider:
     urlQueue = Queue()
     query = ""
     depth = 0
-    MAX_DEPTH = 7
+    MAX_DEPTH = 15
     starting_url = ""
     robotParser = None
     name = "Genji-bot/2.0"
@@ -74,7 +75,7 @@ class Spider:
                 + "DESCRIPTION: " + desc + "\n" \
                 + "KEYWORDS: " + str(keywords) + "\n" \
                 + "SIZE: " + str(size) + " bytes\n" \
-                + "RELEVANT LINKS:" + str(links) + "\n" \
+                + "RELEVANT LINKS: " + str(links) + "\n" \
                 + "----------------------------------------\n"
             
             resultToSave += line
@@ -88,6 +89,20 @@ class Spider:
     def crawl(self, url):
         print("crawling " + url)
         webpage = self.fetch(url)
+        
+        if webpage is None:
+            finalResult = ( \
+                url, \
+                "No title given.", \
+                "No description given.", \
+                "No author given.", \
+                "No keywords given.", \
+                0, \
+                [] \
+            )
+            self.crawlResults.append(finalResult)
+            return
+
         pageSoup = soup(webpage, "html.parser")
             
         title = pageSoup.title.string
@@ -135,6 +150,8 @@ class Spider:
 
         try:
             client = urllib.request.urlopen(request)
+            if client.getcode() > 400:
+                raise
             webpage = client.read()
             client.close()
 
@@ -147,7 +164,7 @@ class Spider:
         parseResult = urlparse(self.starting_url)
         formattedUrl = url
 
-        isInvalidUrl = not url.__contains__(parseResult.scheme)
+        isInvalidUrl = not url.__contains__("http")
 
         if isInvalidUrl:
             formattedUrl = parseResult.scheme + "://" + parseResult.netloc + url
@@ -175,29 +192,29 @@ class Spider:
     def filterList(self, links):
         relevantLinks = []
         results = []
-        select = ""
 
         for x in links:
             url , text = x
+            # remove trailing /
             if url[-1:] == "/":
                 url = url[:-1]
-            parsedURL = url.split('/')[-1]
-            str.replace('_', '-', parsedURL)
-            parsedURL = parsedURL.split('-')
+            
+            path = urlparse(url).path
+            wordsInPath = path.split("/")
 
-            if parsedURL is not None and text is not None and (len(parsedURL) > len(text)):
-                select = ''.join(parsedURL)
-           
-            elif text is None: select = ''.join(parsedURL)
-           
-            elif parsedURL is None: select = text
-           
-            else:
-                select = text 
+            # Asssumption: website title is the last element in path
+            websiteTitle = wordsInPath[-1]
+            normalizedTitle = websiteTitle.replace('_', '-')
+            wordsInTitle = normalizedTitle.split("-")
 
-            if select.__contains__(self.query):
+            wordsInText = []
+            if text is not None:
+                wordsInText = text.split(" ")
+
+            allWordsFromLink = wordsInTitle + wordsInText
+
+            if allWordsFromLink.__contains__(self.query):
                 relevantLinks.append(x)
-
 
         for rel in relevantLinks:
             nextLink, _ = rel
