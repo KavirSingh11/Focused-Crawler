@@ -1,5 +1,3 @@
-from linkData import linkData
-from calcSim import calcSim
 from bs4 import BeautifulSoup as soup
 from queue import Queue
 from urllib.parse import urlparse
@@ -13,7 +11,7 @@ class Spider:
     urlQueue = Queue()
     query = ""
     depth = 0
-    MAX_DEPTH = 2
+    MAX_DEPTH = 10
     starting_url = ""
     robotParser = None
 
@@ -52,23 +50,22 @@ class Spider:
 
         # filter relevant links
         relevantLinks = self.filterList(linkData)
-
+        
         print("---- START ----")
         print("url: " + url)
         print("title: " + title)
         print("desc: " + desc)
         print("author: " + author)
         print("keywords: " + keywords)
-        #print("relevant links: " + str(relevantLinks))
         print("relevant links: " + str(len(relevantLinks)))
+        print("relevant links: " + str(relevantLinks))
         print("---- END ----\n")
 
         if len(relevantLinks) > 0:
-            for rel in relevantLinks:
-                nextUrl, _ = rel
-                self.urlQueue.put(self.buildURL(nextUrl))
+            for link in relevantLinks:
+                self.urlQueue.put(link)
             self.depth += 1
-    
+
     def fetchRobotsTxt(self):
         if not self.starting_url: return []
 
@@ -105,7 +102,9 @@ class Spider:
         parseResult = urlparse(self.starting_url)
         formattedUrl = url
 
-        if not url.__contains__(parseResult.scheme):
+        isInvalidUrl = not url.__contains__(parseResult.scheme)
+
+        if isInvalidUrl:
             formattedUrl = parseResult.scheme + "://" + parseResult.netloc + url
 
         return formattedUrl
@@ -130,13 +129,11 @@ class Spider:
                 
     def filterList(self, links):
         print("looking for similar links")
-        result = []
-        simVal = 0
+        relevantLinks = []
+        results = []
         select = ""
 
         for x in links:
-            
-            findSim = calcSim()
             url , text = x
             if url[-1:] == "/":
                 url = url[:-1]
@@ -154,20 +151,15 @@ class Spider:
             else:
                 select = text 
 
-            # if (len(parsedURL) > len(text)) and parsedURL is not None and text is not None:
-            #     select = ''.join(parsedURL)
+            if select.__contains__(self.query):
+                relevantLinks.append(x)
 
-            # elif text is None: select =  ''.join(parsedURL)
 
-            # elif parsedURL is None: select = text
+        for rel in relevantLinks:
+            nextLink, _ = rel
+            nextValidLink = self.buildURL(nextLink)
+            results.append(nextValidLink)
 
-            # else:
-            #     select = text 
-
-            simVal = findSim.urlSim(select , self.query)
-            # print(simVal)
-            # print(select)
-            if simVal:
-                result.append(x)
-
-        return result
+        
+        resultsWithoutDuplicates = list(dict.fromkeys(results))
+        return resultsWithoutDuplicates
