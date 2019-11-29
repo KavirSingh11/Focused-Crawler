@@ -11,9 +11,11 @@ class Spider:
     urlQueue = Queue()
     query = ""
     depth = 0
-    MAX_DEPTH = 10
+    MAX_DEPTH = 2
     starting_url = ""
     robotParser = None
+
+    crawlResults = []
 
     def __init__(self, query, initialUrl):
         self.query = query
@@ -35,6 +37,35 @@ class Spider:
         
         print("Crawl depth: " + str(self.depth))
 
+        self.save()
+
+    def save(self):
+        print("saving results...")
+        file = open("results.txt", "w")
+
+        totalSize = 0
+        resultToSave = ""
+
+
+        for result in self.crawlResults:
+            url, title, desc, author, keywords, size, links = result
+            totalSize += size
+            
+            line = "URL: " + url + "\n" \
+                + "TITLE: " + title + "\n" \
+                + "DESCRIPTION: " + desc + "\n" \
+                + "KEYWORDS: " + str(keywords) + "\n" \
+                + "SIZE: " + str(size) + " bytes\n" \
+                + "RELEVANT LINKS:" + str(links) + "\n" \
+                + "----------------------------------------\n"
+            
+            resultToSave += line
+                
+        
+        resultToSave += "\nTOTAL BYTES CRAWLED: " + str(totalSize) + " bytes"
+        file.write(resultToSave)
+        file.close()
+
     def getUrlData(self, url):
         webpage = self.fetch(url)
         pageSoup = soup(webpage, "html.parser")
@@ -43,6 +74,7 @@ class Spider:
         desc = self.getAttributeData(pageSoup, "meta", "description")
         author = self.getAttributeData(pageSoup, "meta", "author")
         keywords = self.getAttributeData(pageSoup, "meta", "keywords")
+        webpageSize = webpage.__len__()
 
         links = pageSoup.find_all("a", href=True)
         # extracts url and content from <a> tag
@@ -51,16 +83,19 @@ class Spider:
         # filter relevant links
         relevantLinks = self.filterList(linkData)
         
-        print("---- START ----")
-        print("url: " + url)
-        print("title: " + title)
-        print("desc: " + desc)
-        print("author: " + author)
-        print("keywords: " + keywords)
-        print("relevant links: " + str(len(relevantLinks)))
-        print("relevant links: " + str(relevantLinks))
-        print("---- END ----\n")
+        # print("---- START ----")
+        # print("url: " + url)
+        # print("title: " + title)
+        # print("desc: " + desc)
+        # print("author: " + author)
+        # print("keywords: " + keywords)
+        # print("relevant links: " + str(len(relevantLinks)))
+        # print("relevant links: " + str(relevantLinks))
+        # print("---- END ----\n")
 
+        finalResult = (url, title, desc, author, keywords, webpageSize, str(relevantLinks))
+        self.crawlResults.append(finalResult)
+    
         if len(relevantLinks) > 0:
             for link in relevantLinks:
                 self.urlQueue.put(link)
