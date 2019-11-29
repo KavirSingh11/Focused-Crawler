@@ -16,6 +16,7 @@ class Spider:
     starting_url = ""
     robotParser = None
     name = "Genji-bot/2.0"
+    visitHistory = []
 
     crawlResults = []
 
@@ -34,11 +35,18 @@ class Spider:
             nextUrl = self.urlQueue.get()
             crawlDelay = self.robotParser.crawl_delay(self.name)
 
-            if self.robotParser.can_fetch(self.name, nextUrl):
+            hasVisitedLink = nextUrl in self.visitHistory
+            if (hasVisitedLink):
+                continue
+
+            canVisitLink = self.robotParser.can_fetch(self.name, nextUrl)
+
+            if canVisitLink:
                 if crawlDelay:
                     time.sleep(crawlDelay * 1000) # crawlDelay is in seconds, sleep accepts milliseconds
 
                 self.crawl(nextUrl)
+                self.visitHistory.append(nextUrl)
             else:
                 print("Cannot visit: ", nextUrl)
         
