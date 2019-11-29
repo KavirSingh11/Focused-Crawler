@@ -3,7 +3,8 @@ from queue import Queue
 from urllib.parse import urlparse
 import urllib.request
 import urllib.robotparser
-import bs4  
+import bs4 
+import time
 
 class Spider:
     startTime = 0
@@ -11,9 +12,10 @@ class Spider:
     urlQueue = Queue()
     query = ""
     depth = 0
-    MAX_DEPTH = 2
+    MAX_DEPTH = 7
     starting_url = ""
     robotParser = None
+    name = "Genji-bot/2.0"
 
     crawlResults = []
 
@@ -24,22 +26,30 @@ class Spider:
         self.robotParser = urllib.robotparser.RobotFileParser()
     
     def run(self):
+        startTime = time.time()
         self.fetchRobotsTxt()
 
-        print("crawling...")
+        print("beginning crawl...")
         while(not self.urlQueue.empty() and self.depth < self.MAX_DEPTH):
             nextUrl = self.urlQueue.get()
+            crawlDelay = self.robotParser.crawl_delay(self.name)
 
-            if self.robotParser.can_fetch("Genji-bot/2.0", nextUrl):
-                self.getUrlData(nextUrl)
+            if self.robotParser.can_fetch(self.name, nextUrl):
+                if crawlDelay:
+                    time.sleep(crawlDelay * 1000) # crawlDelay is in seconds, sleep accepts milliseconds
+
+                self.crawl(nextUrl)
             else:
                 print("Cannot visit: ", nextUrl)
         
+        endTime = time.time()
+        crawlTime = endTime - startTime
+
         print("Crawl depth: " + str(self.depth))
 
-        self.save()
+        self.save(crawlTime)
 
-    def save(self):
+    def save(self, crawlTime):
         print("saving results...")
         file = open("results.txt", "w")
 
@@ -62,11 +72,13 @@ class Spider:
             resultToSave += line
                 
         
-        resultToSave += "\nTOTAL BYTES CRAWLED: " + str(totalSize) + " bytes"
+        resultToSave += "\nTOTAL BYTES CRAWLED: " + str(totalSize) + " byte (s)\n" \
+            + "TOTAL CRAWL TIME: " + str(round(crawlTime, 5)) + " second (s)"
         file.write(resultToSave)
         file.close()
 
-    def getUrlData(self, url):
+    def crawl(self, url):
+        print("crawling " + url)
         webpage = self.fetch(url)
         pageSoup = soup(webpage, "html.parser")
             
@@ -83,16 +95,6 @@ class Spider:
         # filter relevant links
         relevantLinks = self.filterList(linkData)
         
-        # print("---- START ----")
-        # print("url: " + url)
-        # print("title: " + title)
-        # print("desc: " + desc)
-        # print("author: " + author)
-        # print("keywords: " + keywords)
-        # print("relevant links: " + str(len(relevantLinks)))
-        # print("relevant links: " + str(relevantLinks))
-        # print("---- END ----\n")
-
         finalResult = (url, title, desc, author, keywords, webpageSize, str(relevantLinks))
         self.crawlResults.append(finalResult)
     
@@ -120,7 +122,7 @@ class Spider:
         request = urllib.request.Request(
             url,
             data=None,
-            headers={ "User-Agent": "Genji-bot/2.0" }
+            headers={ "User-Agent": self.name }
         )
 
         try:
@@ -163,7 +165,6 @@ class Spider:
                 return content
                 
     def filterList(self, links):
-        print("looking for similar links")
         relevantLinks = []
         results = []
         select = ""
