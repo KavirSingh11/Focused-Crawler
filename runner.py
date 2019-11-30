@@ -1,7 +1,13 @@
-import scraper
+from spider import Spider
 
-query = input("Enter your topic")
+defaultUrl = 'https://www.reddit.com/r/all/'
+initialUrl = defaultUrl
 
-url = input("Enter the starting the URL")
-pageSoup = scraper.getPageData(url)
-links = scraper.searchLinks
+urlInput = input("Enter a starting url: ")
+queryInput = input("Enter your topic: ")
+
+if len(urlInput) > 0:
+    initialUrl = urlInput
+
+crawler = Spider(queryInput, initialUrl)
+crawler.run()

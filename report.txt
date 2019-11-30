@@ -1,0 +1,25 @@
+Group Members:
+- Nigel Fernandes 500679996
+- Kavir Singh 500711173
+
+How to run:
+1) Make sure you running python version 3.8+
+2) pip install beautifulsoup4
+3) python runner.py
+4) Follow the instructions on the terminal
+
+All crawled data is stored in the results.txt file.
+
+What is the stop criteria?
+- The crawler stops after it reaches a certain depth (distance from the initial url) or after there no more relevant links to crawl.
+
+How did we follow Robots Exclusion Protocol?
+- We only visit a url in the queue if we are "allowed" to. This is given in the "Allow" portion of robots.txt
+- We added a crawl delay based on "Crawl-delay" portion of robots.txt
+
+How did we follow the Politness Principle?
+- We made all our request with the User-Agent: "Genji-bot/2.0", which is the identity of our crawler.
+- We fetched and followed the rules related to robots.txt
+- We added a crawl delay to our requests to ensure a low bandwidth.
+
+The crawl time and size of crawled documents are printed in the results.txt file.
