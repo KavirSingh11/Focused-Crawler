@@ -198,7 +198,7 @@ class Spider:
         wordsInQuery = [word.lower() for word in self.query.split(" ")]
         wordsInQuery = list(dict.fromkeys(wordsInQuery))
 
-        similarityThreshold = len(wordsInQuery) / 2 #should contain more than half the words
+        similarityThreshold = len(wordsInQuery) / 3 #should contain more 30% of the query
 
         for x in links:
             url , text = x
