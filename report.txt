@@ -3,9 +3,10 @@ Group Members:
 - Kavir Singh 500711173
 
 How to run:
-
 1) Make sure you running python version 3.8+
 2) pip install beautifulsoup4
+3) python runner.py
+4) Follow the instructions on the terminal
 
 All crawled data is stored in the results.txt file.
 
