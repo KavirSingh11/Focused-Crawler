@@ -60,7 +60,7 @@ class Spider:
 
     def save(self, crawlTime):
         print("saving results...")
-        file = open("results.txt", "w")
+        file = open("results.txt", "w", encoding="utf-8")
 
         totalSize = 0
         resultToSave = ""
@@ -105,7 +105,10 @@ class Spider:
 
         pageSoup = soup(webpage, "html.parser")
             
-        title = pageSoup.title.string
+        title = "No title given."
+        if pageSoup.title:
+            title = pageSoup.title.string
+
         desc = self.getAttributeData(pageSoup, "meta", "description")
         author = self.getAttributeData(pageSoup, "meta", "author")
         keywords = self.getAttributeData(pageSoup, "meta", "keywords")
@@ -173,7 +176,7 @@ class Spider:
 
     def getAttributeData(self, pageSoup, tag, attr):
         data = pageSoup.find(tag, attrs={ "name": attr })
-        if data:
+        if data and "content" in data:
             return str(data["content"])
         else:
             return "No " + attr + " given."
@@ -192,6 +195,9 @@ class Spider:
     def filterList(self, links):
         relevantLinks = []
         results = []
+        wordsInQuery = list(dict.fromkeys(self.query.split(" ")))
+        similarityThreshold = len(wordsInQuery) / 2 #should contain more than half the words
+
 
         for x in links:
             url , text = x
@@ -211,9 +217,11 @@ class Spider:
             if text is not None:
                 wordsInText = text.split(" ")
 
-            allWordsFromLink = wordsInTitle + wordsInText
+            allWordsFromLink = list(dict.fromkeys(wordsInTitle + wordsInText))
 
-            if allWordsFromLink.__contains__(self.query):
+            intersection = list(set(wordsInQuery) & set(allWordsFromLink))
+
+            if len(intersection) >= similarityThreshold:
                 relevantLinks.append(x)
 
         for rel in relevantLinks:
