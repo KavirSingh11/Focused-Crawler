@@ -64,8 +64,8 @@ class Spider:
         file = open("results.txt", "w", encoding="utf-8")
 
         totalSize = 0
-        resultToSave = ""
-
+        resultToSave = "INITIAL_URL: " + self.starting_url + "\n"\
+            + "QUERY: " + self.query + "\n\n"
 
         for result in self.crawlResults:
             url, title, desc, author, keywords, size, links = result
