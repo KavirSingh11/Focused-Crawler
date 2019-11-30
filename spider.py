@@ -194,9 +194,11 @@ class Spider:
     def filterList(self, links):
         relevantLinks = []
         results = []
-        wordsInQuery = list(dict.fromkeys(self.query.split(" ")))
-        similarityThreshold = len(wordsInQuery) / 2 #should contain more than half the words
 
+        wordsInQuery = [word.lower() for word in self.query.split(" ")]
+        wordsInQuery = list(dict.fromkeys(wordsInQuery))
+
+        similarityThreshold = len(wordsInQuery) / 2 #should contain more than half the words
 
         for x in links:
             url , text = x
@@ -216,7 +218,8 @@ class Spider:
             if text is not None:
                 wordsInText = text.split(" ")
 
-            allWordsFromLink = list(dict.fromkeys(wordsInTitle + wordsInText))
+            allWordsFromLink = [word.lower() for word in wordsInTitle + wordsInText]
+            allWordsFromLink = list(dict.fromkeys(allWordsFromLink))
 
             intersection = list(set(wordsInQuery) & set(allWordsFromLink))
 
