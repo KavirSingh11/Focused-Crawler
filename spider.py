@@ -13,7 +13,7 @@ class Spider:
     urlQueue = Queue()
     query = ""
     depth = 0
-    MAX_DEPTH = 15
+    MAX_DEPTH = 10
     starting_url = ""
     robotParser = None
     name = "Genji-bot/2.0"
@@ -29,11 +29,12 @@ class Spider:
     
     def run(self):
         startTime = time.time()
-        self.fetchRobotsTxt()
 
         print("beginning crawl...")
         while(not self.urlQueue.empty() and self.depth < self.MAX_DEPTH):
             nextUrl = self.urlQueue.get()
+            self.fetchRobotsTxt(nextUrl)
+
             crawlDelay = self.robotParser.crawl_delay(self.name)
 
             hasVisitedLink = nextUrl in self.visitHistory
@@ -129,10 +130,8 @@ class Spider:
                 self.urlQueue.put(link)
             self.depth += 1
 
-    def fetchRobotsTxt(self):
-        if not self.starting_url: return []
-
-        parsed = urlparse(self.starting_url)
+    def fetchRobotsTxt(self, url):
+        parsed = urlparse(url)
         domain = parsed.scheme + "://" + parsed.netloc
         url = domain + "/robots.txt"
         
