@@ -1,12 +1,13 @@
 from spider import Spider
 
-query = input("Enter your topic")
-# query = 'food'
-url = 'https://www.reddit.com/r/all/'
+defaultUrl = 'https://www.reddit.com/r/all/'
+initialUrl = defaultUrl
 
-crawler = Spider(query, url)
+urlInput = input("Enter a starting url: ")
+queryInput = input("Enter your topic: ")
+
+if len(urlInput) > 0:
+    initialUrl = urlInput
+
+crawler = Spider(queryInput, initialUrl)
 crawler.run()
-
-# url = input("Enter the starting the URL")
-# pageSoup = scraper.getPageData(url)
-# links = scraper.searchLinks

@@ -2,6 +2,11 @@ Group Members:
 - Nigel Fernandes 500679996
 - Kavir Singh 500711173
 
+How to run:
+
+1) Make sure you running python version 3.8+
+2) pip install beautifulsoup4
+
 All crawled data is stored in the results.txt file.
 
 What is the stop criteria?
